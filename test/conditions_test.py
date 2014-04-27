@@ -1,5 +1,6 @@
 import unittest
-from dbc.conditions import Is, Not, Equals, LessThan, GreaterThan, NotNone, \
+
+from conditions import Is, Not, Equals, LessThan, GreaterThan, NotNone, \
                        LessThanOrEqualTo, GreaterThanOrEqualTo, Function
 
 
@@ -106,6 +107,7 @@ class ContractsTest(unittest.TestCase):
         self.assertFalse(condition.check(-1000000000000000000000000000000000000000))
         self.assertTrue(condition.check(11))
         self.assertTrue(condition.check(100000000000000000000000000000000000000000))
+
 
 def _greaterThan10(value):
     return value > 10

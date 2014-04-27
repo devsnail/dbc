@@ -4,7 +4,7 @@ design by contract
 """
 
 from itertools import chain
-from dbc.runtime import Runtime
+from runtime import Runtime
 
 
 def PreCallAllArgumentsContract(condition):

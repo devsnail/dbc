@@ -1,6 +1,7 @@
 import unittest
-from dbc.conditions import Is, Not, GreaterThan, LessThan, NotNone
-from dbc.contracts import PreCallArgumentsContract, PostCallResultContract,\
+
+from conditions import Is, Not, GreaterThan, LessThan, NotNone
+from contracts import PreCallArgumentsContract, PostCallResultContract, \
     PreCallAllArgumentsContract, PreCallFieldContract, PostCallFieldContract
 
 
