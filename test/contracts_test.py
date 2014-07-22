@@ -7,17 +7,27 @@ from contracts import PreCallArgumentsContract, PostCallResultContract, \
 
 class ContractsTest(unittest.TestCase):
 
-    def testArgumentNotNoneContract(self):
+    def testArgumentNotNoneContract_OkCase(self):
         obj = TestThing()
         obj.setValueAndString_NoNone(1, "1")
+        self.assertEquals("1", obj.getString())
+        self.assertEquals(1, obj.getValue())
+
+    def testArgumentNotNoneContract_ErrorCases(self):
+        obj = TestThing()
         self.assertRaises(AssertionError, lambda : obj.setValueAndString_NoNone(None, ""))
         self.assertRaises(AssertionError, lambda : obj.setValueAndString_NoNone(None, None))
         self.assertRaises(AssertionError, lambda : obj.setValueAndString_NoNone(1, None))
 
-    def testPositionalNotNoneContract(self):
+    def testPositionalNotNoneContract_OkCase(self):
         obj = TestThing()
-        obj.setValueAndString_PositionalValueNotNone(1, "1")
         obj.setValueAndString_PositionalValueNotNone(1, None)
+        obj.setValueAndString_PositionalValueNotNone(1, "1")
+        self.assertEquals("1", obj.getString())
+        self.assertEquals(1, obj.getValue())
+
+    def testPositionalNotNoneContract_ErrorCases(self):
+        obj = TestThing()
         self.assertRaises(AssertionError, lambda : obj.setValueAndString_PositionalValueNotNone(None, ""))
         self.assertRaises(AssertionError, lambda : obj.setValueAndString_PositionalValueNotNone(None, None))
 
@@ -88,6 +98,9 @@ class TestThing(object):
 
     def setString(self, string):
         self._string = string
+
+    def getString(self):
+        return self._string
 
     @PostCallFieldContract(NotNone(), "_value")
     def setValueNotNone(self, value):
