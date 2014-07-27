@@ -1,8 +1,8 @@
 import unittest
 
-from conditions import Is, Not, GreaterThan, LessThan, NotNone
+from matchers import Is, Not, GreaterThan, LessThan, NotNone
 from contracts import PreCallArgumentsContract, PostCallResultContract, \
-    PreCallAllArgumentsContract, PreCallFieldContract, PostCallFieldContract
+    PreCallAllArgumentsContract, PreCallAttributeContract, PostCallAttributeContract
 
 
 class ContractsTest(unittest.TestCase):
@@ -69,7 +69,7 @@ class ContractsTest(unittest.TestCase):
         self.assertEquals(0, obj.decValueGreaterThen0())
         self.assertRaises(AssertionError, obj.decValueGreaterThen0)
 
-    def testIncValueWithCallableField(self):
+    def testIncValueWithCallableAttribute(self):
         obj = TestThing()
         obj.setValueNotNone(8)
         self.assertEquals(9, obj.incValueLessThan10())
@@ -102,19 +102,22 @@ class TestThing(object):
     def getString(self):
         return self._string
 
-    @PostCallFieldContract(NotNone(), "_value")
+    def getValuePlusXMinusY(self, x, y):
+        return self._value + x - y
+
+    @PostCallAttributeContract(NotNone(), "_value")
     def setValueNotNone(self, value):
         self.setValueNoCheck(value)
 
     def setValueNoCheck(self, value):
         self._value = value
 
-    @PreCallFieldContract(GreaterThan(0), "_value")
+    @PreCallAttributeContract(GreaterThan(0), "_value")
     def decValueGreaterThen0(self):
         self._value -= 1
         return self._value
 
-    @PreCallFieldContract(LessThan(10), "getValue") # callable field
+    @PreCallAttributeContract(LessThan(10), "getValuePlusXMinusY", 5, y=5) # callable attribute
     def incValueLessThan10(self):
         self._value += 1
         return self._value

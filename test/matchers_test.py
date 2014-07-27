@@ -1,112 +1,112 @@
 import unittest
 
-from conditions import Is, Not, Equals, LessThan, GreaterThan, NotNone, \
+from matchers import Is, Not, Equals, LessThan, GreaterThan, NotNone, \
                        LessThanOrEqualTo, GreaterThanOrEqualTo, Function
 
 
-class ContractsTest(unittest.TestCase):
+class MatchersTest(unittest.TestCase):
     def testIs(self):
-        condition = Is("String")
-        self.assertTrue(condition.matches("String"))
-        self.assertFalse(condition.matches("AnotherString"))
-        self.assertFalse(condition.matches(None))
-        self.assertFalse(condition.matches("Strings".rstrip("s")))
+        matcher = Is("String")
+        self.assertTrue(matcher.matches("String"))
+        self.assertFalse(matcher.matches("AnotherString"))
+        self.assertFalse(matcher.matches(None))
+        self.assertFalse(matcher.matches("Strings".rstrip("s")))
 
     def testEquals(self):
-        condition = Equals("String")
-        self.assertTrue(condition.matches("String"))
-        self.assertFalse(condition.matches("AnotherString"))
-        self.assertFalse(condition.matches(None))
-        self.assertTrue(condition.matches("Strings".rstrip("s")))
+        matcher = Equals("String")
+        self.assertTrue(matcher.matches("String"))
+        self.assertFalse(matcher.matches("AnotherString"))
+        self.assertFalse(matcher.matches(None))
+        self.assertTrue(matcher.matches("Strings".rstrip("s")))
 
     def testLessThan(self):
-        condition = LessThan(10)
-        self.assertTrue(condition.matches(4))
-        self.assertFalse(condition.matches(10))
-        self.assertFalse(condition.matches(1000000000000000000000000000000000000000))
-        self.assertTrue(condition.matches(9))
-        self.assertTrue(condition.matches(-100000000000000000000000000000000000000000))
+        matcher = LessThan(10)
+        self.assertTrue(matcher.matches(4))
+        self.assertFalse(matcher.matches(10))
+        self.assertFalse(matcher.matches(1000000000000000000000000000000000000000))
+        self.assertTrue(matcher.matches(9))
+        self.assertTrue(matcher.matches(-100000000000000000000000000000000000000000))
 
     def testLessThanOrEqualTo(self):
-        condition = LessThanOrEqualTo(10)
-        self.assertTrue(condition.matches(4))
-        self.assertTrue(condition.matches(10))
-        self.assertFalse(condition.matches(1000000000000000000000000000000000000000))
-        self.assertTrue(condition.matches(9))
-        self.assertTrue(condition.matches(-100000000000000000000000000000000000000000))
+        matcher = LessThanOrEqualTo(10)
+        self.assertTrue(matcher.matches(4))
+        self.assertTrue(matcher.matches(10))
+        self.assertFalse(matcher.matches(1000000000000000000000000000000000000000))
+        self.assertTrue(matcher.matches(9))
+        self.assertTrue(matcher.matches(-100000000000000000000000000000000000000000))
 
     def testGreaterThan(self):
-        condition = GreaterThan(10)
-        self.assertTrue(condition.matches(13))
-        self.assertFalse(condition.matches(10))
-        self.assertFalse(condition.matches(-1000000000000000000000000000000000000000))
-        self.assertTrue(condition.matches(11))
-        self.assertTrue(condition.matches(100000000000000000000000000000000000000000))
+        matcher = GreaterThan(10)
+        self.assertTrue(matcher.matches(13))
+        self.assertFalse(matcher.matches(10))
+        self.assertFalse(matcher.matches(-1000000000000000000000000000000000000000))
+        self.assertTrue(matcher.matches(11))
+        self.assertTrue(matcher.matches(100000000000000000000000000000000000000000))
 
     def testGreaterThanOrEqualTo(self):
-        condition = GreaterThanOrEqualTo(10)
-        self.assertTrue(condition.matches(13))
-        self.assertTrue(condition.matches(10))
-        self.assertFalse(condition.matches(-1000000000000000000000000000000000000000))
-        self.assertTrue(condition.matches(11))
-        self.assertTrue(condition.matches(100000000000000000000000000000000000000000))
+        matcher = GreaterThanOrEqualTo(10)
+        self.assertTrue(matcher.matches(13))
+        self.assertTrue(matcher.matches(10))
+        self.assertFalse(matcher.matches(-1000000000000000000000000000000000000000))
+        self.assertTrue(matcher.matches(11))
+        self.assertTrue(matcher.matches(100000000000000000000000000000000000000000))
 
     def testAnd(self):
-        condition = GreaterThan(10) + LessThan(20)
-        self.assertTrue(condition.matches(11))
-        self.assertFalse(condition.matches(10))
-        self.assertTrue(condition.matches(19))
-        self.assertFalse(condition.matches(20))
+        matcher = GreaterThan(10) + LessThan(20)
+        self.assertTrue(matcher.matches(11))
+        self.assertFalse(matcher.matches(10))
+        self.assertTrue(matcher.matches(19))
+        self.assertFalse(matcher.matches(20))
 
     def testOr(self):
-        condition = GreaterThan(20) | LessThan(10)
-        self.assertTrue(condition.matches(9))
-        self.assertFalse(condition.matches(10))
-        self.assertTrue(condition.matches(21))
-        self.assertFalse(condition.matches(20))
-        self.assertFalse(condition.matches(15))
+        matcher = GreaterThan(20) | LessThan(10)
+        self.assertTrue(matcher.matches(9))
+        self.assertFalse(matcher.matches(10))
+        self.assertTrue(matcher.matches(21))
+        self.assertFalse(matcher.matches(20))
+        self.assertFalse(matcher.matches(15))
 
     def testNot(self):
-        condition = Not(Equals("String"))
-        self.assertFalse(condition.matches("String"))
-        self.assertTrue(condition.matches("AnotherString"))
+        matcher = Not(Equals("String"))
+        self.assertFalse(matcher.matches("String"))
+        self.assertTrue(matcher.matches("AnotherString"))
 
     def testNotIsNone(self):
-        condition = Not(Is(None))
-        self.assertTrue(condition.matches("NotNone"))
-        self.assertFalse(condition.matches(None))
+        matcher = Not(Is(None))
+        self.assertTrue(matcher.matches("NotNone"))
+        self.assertFalse(matcher.matches(None))
 
     def testNotNone(self):
-        condition = NotNone()
-        self.assertTrue(condition.matches("NotNone"))
-        self.assertFalse(condition.matches(None))
+        matcher = NotNone()
+        self.assertTrue(matcher.matches("NotNone"))
+        self.assertFalse(matcher.matches(None))
 
     def testFunctionWithLambda(self):
-        condition = Function(lambda x: x > 10)
-        self.assertTrue(condition.matches(13))
-        self.assertFalse(condition.matches(10))
-        self.assertFalse(condition.matches(-1000000000000000000000000000000000000000))
-        self.assertTrue(condition.matches(11))
-        self.assertTrue(condition.matches(100000000000000000000000000000000000000000))
+        matcher = Function(lambda x: x > 10)
+        self.assertTrue(matcher.matches(13))
+        self.assertFalse(matcher.matches(10))
+        self.assertFalse(matcher.matches(-1000000000000000000000000000000000000000))
+        self.assertTrue(matcher.matches(11))
+        self.assertTrue(matcher.matches(100000000000000000000000000000000000000000))
 
     def testFunctionWithMethod(self):
-        condition = Function(self._greaterThan10)
-        self.assertTrue(condition.matches(13))
-        self.assertFalse(condition.matches(10))
-        self.assertFalse(condition.matches(-1000000000000000000000000000000000000000))
-        self.assertTrue(condition.matches(11))
-        self.assertTrue(condition.matches(100000000000000000000000000000000000000000))
+        matcher = Function(self._greaterThan10)
+        self.assertTrue(matcher.matches(13))
+        self.assertFalse(matcher.matches(10))
+        self.assertFalse(matcher.matches(-1000000000000000000000000000000000000000))
+        self.assertTrue(matcher.matches(11))
+        self.assertTrue(matcher.matches(100000000000000000000000000000000000000000))
 
     def _greaterThan10(self, value):
         return value > 10
 
     def testFunctionWithFunction(self):
-        condition = Function(_greaterThan10)
-        self.assertTrue(condition.matches(13))
-        self.assertFalse(condition.matches(10))
-        self.assertFalse(condition.matches(-1000000000000000000000000000000000000000))
-        self.assertTrue(condition.matches(11))
-        self.assertTrue(condition.matches(100000000000000000000000000000000000000000))
+        matcher = Function(_greaterThan10)
+        self.assertTrue(matcher.matches(13))
+        self.assertFalse(matcher.matches(10))
+        self.assertFalse(matcher.matches(-1000000000000000000000000000000000000000))
+        self.assertTrue(matcher.matches(11))
+        self.assertTrue(matcher.matches(100000000000000000000000000000000000000000))
 
 
 def _greaterThan10(value):

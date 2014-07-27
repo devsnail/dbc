@@ -4,152 +4,83 @@ design by contract
 """
 
 from itertools import chain
-from runtime import Runtime
+from contract_helpers import Contract, AttributeContract, ArgumentContract, getAttribute
 
 
-def PreCallAllArgumentsContract(matcher):
+class PreCallAllArgumentsContract(Contract):
     """
-    A decorator that applies a matcher to all arguments (including self) of
+    A decorator class that applies a matcher to all arguments (including self) of
     the decorated method.
-
-    @note: This decorator has no effect if
-    Runtime.getInstance().getVariable("UseContracts") is False
-    @param matcher: A L{Matcher} object to test on all arguments
-    @type matcher: L{Matcher}
-
-    @return: The decorated function
-    @rtype: C{function}
     """
-    def decorator(function):
-        if usingContracts():
-            def inner(*args, **kwargs):
-                argumentIterator = chain(args, kwargs.itervalues())
-                assert all(matcher.matches(arg) for arg in argumentIterator), \
-                       "An argument does not fulfill the contract: '%s'" % str(matcher)
-                return function(*args, **kwargs)
-            return inner
-        return function
-    return decorator
+    def decorate(self, function):
+        def wrapper(*args, **kwargs):
+            argumentIterator = chain(args, kwargs.itervalues())
+            assert all(self._matcher.matches(arg) for arg in argumentIterator), \
+                   "An argument does not fulfill the contract: '%s'" % str(self._matcher)
+            return function(*args, **kwargs)
+        return wrapper
 
 
-def PreCallArgumentsContract(matcher, argumentPositions = (), argumentKeywords = ()):
+class PreCallArgumentsContract(ArgumentContract):
     """
-    A decorator that applies a matcher to the specified arguments of the decorated method.
+    A decorator class that applies a matcher to the specified arguments of the decorated method.
     The arguments are specified using either the positional index of the argument or the parameter name (keyword)
-
-    @note: This decorator has no effect if Runtime.getInstance().getVariable("UseContracts") is False
-
-    @param matcher: A L{Matcher} object to test on some argument(s).
-    @type matcher: L{Matcher}
-    @param argumentPositions: The indices (positions) of the arguments, in the argument list, to test.
-    @type argumentPositions: iterator<int>
-    @param argumentKeywords: The names of the arguments, in the named argument list, to test.
-    @type argumentKeywords: iterator<string>
-
-    @return: The decorated function
-    @rtype: C{function}
     """
-    def decorator(function):
-        if usingContracts():
-            def inner(*args, **kwargs):
+    def decorate(self, function):
+        def wrapper(*args, **kwargs):
 
-                argsIter = (args[position] for position in argumentPositions)
-                kwargsIter = (kwargs[keyword] for keyword in argumentKeywords)
+            argsIter = (args[position] for position in self._argumentPositions)
+            kwargsIter = (kwargs[keyword] for keyword in self._argumentKeywords)
 
-                assert all(matcher.matches(arg) for arg in chain(argsIter, kwargsIter)), \
-                       "An argument does not fulfill the contract: '%s'" % str(matcher)
+            assert all(self._matcher.matches(arg) for arg in chain(argsIter, kwargsIter)), \
+                   "An argument does not fulfill the contract: '%s'" % str(self._matcher)
 
-                return function(*args, **kwargs)
-            return inner
-        return function
-    return decorator
+            return function(*args, **kwargs)
+        return wrapper
 
 
-def _getAttribute(obj, attributeName, *args, **kwargs):
-    attribute = getattr(obj, attributeName)
-    return attribute(*args, **kwargs) if callable(attribute) else attribute
-
-
-def PreCallFieldContract(matcher, attribute, *fieldArgs, **fieldKWArgs):
+class PreCallAttributeContract(AttributeContract):
     # Disable matches for * and ** magic
     # pylint: disable=W0142
     """
-    A decorator that applies a matcher to an attribute of the object containing the method that is decorated.
+    A decorator class that applies a matcher to an attribute of the object containing the method that is decorated.
     This attribute can be a member variable, but also a method. The matcher is applied before the actual call is performed
     If the attribute is a method that require some statically known arguments, these can be passed after the attribute argument
-
-    @note: This decorator has no effect if Runtime.getInstance().getVariable("UseContracts") is False
-    @param matcher: A L{Matcher} object to test on all arguments
-    @type matcher: L{Matcher}
-    @param attribute: The name of the attribute. Can be either a field or a method.
-    @type attribute: C{string}
-
-    @return: The decorated function
-    @rtype: C{function}
     """
-    def decorator(function):
-        if usingContracts():
-            def inner(self, *args, **kwargs):
-                assert matcher.matches(_getAttribute(self, attribute, *fieldArgs, **fieldKWArgs)), \
-                       "The field '%s' does not fulfill the contract '%s' prior to the call. Actual value: '%s'." % (attribute, str(matcher), _getAttribute(self, attribute, *fieldArgs, **fieldKWArgs))
-                return function(self, *args, **kwargs)
-            return inner
-        return function
-    return decorator
+    def decorate(self, function):
+        def wrapper(obj, *args, **kwargs):
+            assert self._matcher.matches(getAttribute(obj, self._attribute, *self._attributeArgs, **self._attribueKwArgs)), \
+                   "The attribute '%s' does not fulfill the contract '%s' prior to the call. Actual value: '%s'." % \
+                   (self._attribute, str(self._matcher), getAttribute(obj, self._attribute, *self._attributeArgs, **self._attribueKwArgs))
+            return function(obj, *args, **kwargs)
+        return wrapper
 
 
-def PostCallFieldContract(matcher, field, *fieldArgs, **fieldKWArgs):
+class PostCallAttributeContract(AttributeContract):
     # Disable matches for * and ** magic
     # pylint: disable=W0142
     """
-    A decorator that applies a matcher to an attribute of the object containing the method that is decorated.
+    A decorator class that applies a matcher to an attribute of the object containing the method that is decorated.
     This attribute can be a member variable, but also a method. The matcher is applied after the decorated method is finished.
     If the attribute is a method that require some statically known arguments, these can be passed after the attribute argument
-
-    @note: This decorator has no effect if Runtime.getInstance().getVariable("UseContracts") is False
-    @param matcher: A L{Matcher} object to test on all arguments
-    @type matcher: L{Matcher}
-    @param attribute: The name of the attribute. Can be either a field or a method.
-    @type attribute: C{string}
-
-    @return: The decorated function
-    @rtype: C{function}
     """
-    def decorator(function):
-        if usingContracts():
-            def inner(self, *args, **kwargs):
-                result = function(self, *args, **kwargs)
-                assert matcher.matches(_getAttribute(self, field, *fieldArgs, **fieldKWArgs)), \
-                       "The field '%s' does not fulfill the contract '%s' after the call. Actual value: '%s',"  % (field, str(matcher), _getAttribute(self, field, *fieldArgs, **fieldKWArgs))
-                return result
-            return inner
-        return function
-    return decorator
+    def decorate(self, function):
+        def wrapper(obj, *args, **kwargs):
+            result = function(obj, *args, **kwargs)
+            assert self._matcher.matches(getAttribute(obj, self._attribute, *self._attributeArgs, **self._attribueKwArgs)), \
+                   "The attribute '%s' does not fulfill the contract '%s' after the call. Actual value: '%s',"  % \
+                   (self._attribute, str(self._matcher), getAttribute(obj, self._attribute, *self._attributeArgs, **self._attribueKwArgs))
+            return result
+        return wrapper
 
-def PostCallResultContract(matcher):
+class PostCallResultContract(Contract):
     """
-    A decorator that applies a matcher to the result of a decorated method
-
-    @note: This decorator has no effect if Runtime.getInstance().getVariable("UseContracts") is False
-    @param matcher: A L{Matcher} object to test on all arguments
-    @type matcher: L{Matcher}
-
-    @return: The decorated function
-    @rtype: C{function}
+    A decorator class that applies a matcher to the result of a decorated method
     """
-    def decorator(function):
-        if usingContracts():
-            def inner(*args, **kwargs):
-                result =  function(*args, **kwargs)
-                assert matcher.matches(result), \
-                       "The result does not fulfill the contract: '%s'" % str(matcher)
-                return result
-            return inner
-        return function
-    return decorator
-
-
-def usingContracts():
-    #Used to completely remove the decorator from the call stack to simplify debugging
-    #Implement this pattern on all annoying decorators(such as tracer and measure)
-    return Runtime().getVariable("DisableContracts") is None
+    def decorate(self, function):
+        def wrapper(*args, **kwargs):
+            result =  function(*args, **kwargs)
+            assert self._matcher.matches(result), \
+                   "The result does not fulfill the contract: '%s'" % str(self._matcher)
+            return result
+        return wrapper

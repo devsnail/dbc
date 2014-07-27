@@ -1,9 +1,9 @@
 class Matcher(object):
     def matches(self, value):
-        raise NotImplementedError("Matcher::matches")
+        raise NotImplementedError()
 
     def __str__(self):
-        raise NotImplementedError("Matcher::__str__")
+        raise NotImplementedError()
 
 
 class Condition(Matcher):
@@ -15,7 +15,7 @@ class Condition(Matcher):
         return self._function(value)
 
     def _function(self, value):
-        raise NotImplementedError("Condition::_function")
+        raise NotImplementedError()
 
     def __add__(self, condition):
         return And(self, condition)
